@@ -292,7 +292,7 @@ def lambda_handler(event, context):
         if isinstance(body, str):
             body = json.loads(body)
 
-        required_fields = ["full_name","email","phone","summary","skills","experience","education"]
+        required_fields = ["full_name", "email", "phone", "summary", "skills", "experience", "education"]
         missing = [f for f in required_fields if not body.get(f)]
         if missing:
             return _response(400, {"error": "Missing fields: " + ", ".join(missing)})
@@ -314,6 +314,7 @@ def lambda_handler(event, context):
 
         table.put_item(Item={
             "cv_id":      cv_id,
+            "string":     "RECORD",
             "full_name":  body["full_name"],
             "email":      body["email"],
             "summary":    body["summary"],
@@ -342,8 +343,7 @@ def _response(code, body):
             "Access-Control-Allow-Origin": "*"
         },
         "body": json.dumps(body, ensure_ascii=False),
-    }
-```
+    }```
 
 4. Click **Deploy**
 5. **Configuration** → **Environment variables** → Add:
@@ -393,7 +393,7 @@ def lambda_handler(event, context):
         if not cv_id or not job_description:
             return _response(400, {"error": "cv_id and job_description are required"})
 
-        cv_item = table.get_item(Key={"cv_id": cv_id}).get("Item")
+        cv_item = table.get_item(Key={"cv_id": cv_id, "string": "RECORD"}).get("Item")
         if not cv_item:
             return _response(404, {"error": "CV not found"})
 
@@ -418,7 +418,7 @@ def lambda_handler(event, context):
             suggestion = "Weak match. Review the job description and tailor your CV accordingly."
 
         table.update_item(
-            Key={"cv_id": cv_id},
+            Key={"cv_id": cv_id, "string": "RECORD"},
             UpdateExpression="SET last_match_score = :s",
             ExpressionAttributeValues={":s": score},
         )
@@ -491,7 +491,42 @@ import os, requests
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
-API = os.environ.get("API_GATEWAY_URL", "")
+API = os.environ.get("API_URL", "https://aor3a1dk52.execute-api.us-east-1.amazonaws.com/prod")
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "healthy"}), 200
+
+@app.route("/generate-cv", methods=["POST"])
+def generate_cv():
+    data = request.get_json()
+    try:
+        r = requests.post(f"{API}/generate", json=data, timeout=30)
+        return jsonify(r.json()), r.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 502
+
+@app.route("/analyze-cv", methods=["POST"])
+def analyze_cv():
+    data = request.get_json()
+    try:
+        r = requests.post(f"{API}/analyze", json=data, timeout=30)
+        return jsonify(r.json()), r.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 502
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=80, debug=False)
+[root@ip-10-0-2-109 ats-app]# cat app.py 
+import os, requests
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+API = os.environ.get("API_URL", "https://aor3a1dk52.execute-api.us-east-1.amazonaws.com/prod")
 
 @app.route("/")
 def index():
