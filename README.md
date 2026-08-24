@@ -43,7 +43,7 @@ ats-cv-generator/
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](images/ATSArchDesign.png)
+![Architecture Diagram](images/ArchitectureDesign.png)
 
 
 
