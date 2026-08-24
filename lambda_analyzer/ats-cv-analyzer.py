@@ -31,7 +31,6 @@ def lambda_handler(event, context):
         if not cv_id or not job_description:
             return _response(400, {"error": "cv_id and job_description are required"})
 
-        # التعديل الأول: إضافة الـ Sort Key المسمى 'string'
         cv_item = table.get_item(Key={"cv_id": cv_id, "string": "RECORD"}).get("Item")
         if not cv_item:
             return _response(404, {"error": "CV not found"})
@@ -56,7 +55,6 @@ def lambda_handler(event, context):
         else:
             suggestion = "Weak match. Review the job description and tailor your CV accordingly."
 
-        # التعديل الثاني: إضافة الـ Sort Key لتحديث السجل بنجاح
         table.update_item(
             Key={"cv_id": cv_id, "string": "RECORD"},
             UpdateExpression="SET last_match_score = :s",
