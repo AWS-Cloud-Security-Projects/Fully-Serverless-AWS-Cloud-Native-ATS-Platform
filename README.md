@@ -43,7 +43,7 @@ ats-cv-generator/
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](images/ArchitectureDesign.png)
+![Architecture Diagram](images/Fully-serverless-AWS-Cloud-Native-ATS-CVs-Generation-Application.drawio.png)
 
 
 
